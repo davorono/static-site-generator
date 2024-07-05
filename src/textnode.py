@@ -73,8 +73,83 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
 
 
 def extract_markdown_images(text):
-    return re.findall("!\[(.*?)\]\((.*?)\)", text)
+    return re.findall(r"!\[(.*?)\]\((.*?)\)", text)
 
 
 def extract_markdown_links(text):
-    return re.findall("\[(.*?)\]\((.*?)\)", text)
+    return re.findall(r"\[(.*?)\]\((.*?)\)", text)
+
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for old_node in old_nodes:
+        if old_node.get_text_type() != text_type_text:
+            new_nodes.append(old_node)
+            continue
+
+        text_strings = re.split(r"!\[.*?\]\(.*?\)", old_node.get_text())
+        image_tuples = extract_markdown_images(old_node.get_text())
+
+        for i in range(len(image_tuples)):
+            new_nodes.append(TextNode(text_strings.pop(0), text_type_text))
+            image_tuple = image_tuples.pop(0)
+            new_nodes.append(TextNode(image_tuple[0], text_type_image, image_tuple[1]))
+
+        # Append the remaining possible text strings, if its not an empty node (image node was at the end of the text string)
+        if text_strings[0] != "":
+            new_nodes.append(TextNode(text_strings[0], text_type_text))
+
+        # Because of how the split occurs when declaring text_strings, it is possible for an empty string to exist at either the beginning or end of the list in the case that the splitting delimiter is at the end or beginning of the string. These cases are handled with the above if statement and the following one.
+        if new_nodes[0].get_text() == "":
+            new_nodes.pop(0)
+        
+    return new_nodes
+
+        
+
+
+
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for old_node in old_nodes:
+        if old_node.get_text_type() != text_type_text:
+            new_nodes.append(old_node)
+            continue
+        
+        text_strings = re.split(r"\[.*?\]\(.*?\)", old_node.get_text())
+        link_tuples = extract_markdown_links(old_node.get_text())
+        
+        for i in range(len(link_tuples)):
+            new_nodes.append(TextNode(text_strings.pop(0), text_type_text))
+            link_tuple = link_tuples.pop(0)
+            new_nodes.append(TextNode(link_tuple[0], text_type_link, link_tuple[1]))
+        
+        if text_strings[0] != "":
+            new_nodes.append(TextNode(text_strings[0], text_type_text))
+
+        # Because of how the split occurs when declaring text_strings, it is possible for an empty string to exist at either the beginning or end of the list in the case that the splitting delimiter is at the end or beginning of the string. These cases are handled with the above if statement and the following one.
+        if new_nodes[0].get_text() == "":
+            new_nodes.pop(0)
+
+    return new_nodes
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

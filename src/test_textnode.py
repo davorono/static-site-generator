@@ -11,6 +11,7 @@ class TestTextNode(unittest.TestCase):
         node4 = TextNode("foo", "bar", "baz");
         self.assertNotEqual(node3, node4)
 
+class TestTextToHTML(unittest.TestCase):
     def test_text_to_html(self):
         tn = TextNode("test", "text")
         self.assertEqual(text_node_to_html_node(tn).to_html(), "test")
@@ -36,6 +37,7 @@ class TestTextNode(unittest.TestCase):
         with self.assertRaises(ValueError):
             text_node_to_html_node(tn).to_html()
 
+class TestSplitNodesDelimiter(unittest.TestCase):
     def test_missing_closing_split_nodes_delimiter(self):
         tn = TextNode("test**", "text")
         with self.assertRaises(ValueError):
@@ -89,6 +91,7 @@ class TestTextNode(unittest.TestCase):
             TextNode("bold", "bold")
         ])
 
+class TestExtractImage(unittest.TestCase):
     def test_extract_image(self):
         self.assertEqual(extract_markdown_images("This is text with an ![image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png) and ![another](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png)"),
         [('image', 'https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png'), ('another', 'https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/dfsdkjfd.png')])
@@ -96,6 +99,7 @@ class TestTextNode(unittest.TestCase):
     def test_extract_image_empty_str(self):
         self.assertEqual(extract_markdown_images(""), [])
 
+class TestExtractLink(unittest.TestCase):
     def test_extract_links(self):
         self.assertEqual(extract_markdown_links("this text supposedly has [a link](https://google.com) matter of fact it has [two links](https://mynuts.com)"),
                          [('a link', 'https://google.com'), ('two links', 'https://mynuts.com')])
@@ -103,6 +107,7 @@ class TestTextNode(unittest.TestCase):
     def test_extract_links_empty_str(self):
         self.assertEqual(extract_markdown_links(""), [])
 
+class TestImageNodeSplit(unittest.TestCase):
     def test_split_nodes_image(self):
         tn = TextNode("this has an ![image](https://pppick.png)", "text")
         self.assertEqual(split_nodes_image([tn]), [
@@ -115,7 +120,8 @@ class TestTextNode(unittest.TestCase):
         self.assertEqual(split_nodes_image([tn]), [
             TextNode("image here", "image", "https://test.png"),
             TextNode(" and also has ", "text"),
-            TextNode("another", "image", "https://test2.png")
+            TextNode("another", "image", "https://test2.png"),
+            TextNode(" right here!", "text")
         ])
 
     def test_split_nodes_non_text(self):
@@ -125,6 +131,30 @@ class TestTextNode(unittest.TestCase):
     def test_split_nodes_only_text(self):
         tn = TextNode("wait this is just text", "text")
         self.assertEqual(split_nodes_image([tn]), [tn])
+
+class TestLinkNodeSplit(unittest.TestCase):
+    def test_split_nodes_link(self):
+        tn = TextNode("this has a [link](https://google.com)", "text")
+        self.assertEqual(split_nodes_link([tn]), [
+            TextNode("this has a ", "text"),
+            TextNode("link", "link", "https://google.com")
+        ])
+    def test_split_nodes_more_links(self):
+        tn = TextNode("[link here](https://davidvoronof.com) and also has [another](https://poop.com) here!", "text")
+        self.assertEqual(split_nodes_link([tn]), [
+            TextNode("link here", "link", "https://davidvoronof.com"),
+            TextNode(" and also has ", "text"),
+            TextNode("another", "link", "https://poop.com"),
+            TextNode(" here!", "text")
+        ])
+
+    def test_split_link_nodes_non_text(self):
+        tn = TextNode("hold on this is **bold**", "bold")
+        self.assertEqual(split_nodes_link([tn]), [tn])
+
+    def test_split_nodes_only_text(self):
+        tn = TextNode("wait this is just text", "text")
+        self.assertEqual(split_nodes_link([tn]), [tn])
 
 
 if __name__ == "__main__":
