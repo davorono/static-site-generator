@@ -156,6 +156,37 @@ class TestLinkNodeSplit(unittest.TestCase):
         tn = TextNode("wait this is just text", "text")
         self.assertEqual(split_nodes_link([tn]), [tn])
 
+class TestTextToTextNodes(unittest.TestCase):
+    def test_basic(self):
+        text = "This is **text** with an *italic* word and a `code block` and an ![image](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png) and a [link](https://boot.dev)"
+        self.assertEqual(text_to_text_nodes(text), [
+            TextNode("This is ", text_type_text),
+            TextNode("text", text_type_bold),
+            TextNode(" with an ", text_type_text),
+            TextNode("italic", text_type_italic),
+            TextNode(" word and a ", text_type_text),
+            TextNode("code block", text_type_code),
+            TextNode(" and an ", text_type_text),
+            TextNode("image", text_type_image, "https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/zjjcJKZ.png"),
+            TextNode(" and a ", text_type_text),
+            TextNode("link", text_type_link, "https://boot.dev"),
+        ])
+
+    def test_empty(self):
+        text = ""
+        self.assertEqual(text_to_text_nodes(text), [])
+
+    def test_just_text(self):
+        text = "This is just text"
+        self.assertEqual(text_to_text_nodes(text), [
+            TextNode("This is just text", "text")
+        ])
+
+    def test_missing_closing(self):
+        text = "This is a **bad bold"
+        with self.assertRaises(ValueError):
+            text_to_text_nodes(text)
+
 
 if __name__ == "__main__":
     unittest.main()

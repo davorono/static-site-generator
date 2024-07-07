@@ -104,11 +104,6 @@ def split_nodes_image(old_nodes):
         
     return new_nodes
 
-        
-
-
-
-
 def split_nodes_link(old_nodes):
     new_nodes = []
     for old_node in old_nodes:
@@ -133,6 +128,13 @@ def split_nodes_link(old_nodes):
 
     return new_nodes
             
+def text_to_text_nodes(text):
+    tn = TextNode(text, "text")
+    return split_nodes_link(
+        split_nodes_image(
+        split_nodes_delimiter(
+        split_nodes_delimiter(
+            split_nodes_delimiter([tn], "**", "bold"), "*", "italic"), "`", "code")))
 
 
 
